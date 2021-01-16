@@ -3,6 +3,7 @@ package com.kangdroid.server.service
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
 import com.kangdroid.server.dto.TrashDataResponseDto
+import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -12,5 +13,9 @@ class TrashDataService (val trashDataRepository: TrashDataRepository) {
         val entityOptional: Optional<TrashData> = trashDataRepository.findById(id) ?: throw IllegalArgumentException("No such ID: $id")
 
         return TrashDataResponseDto(entityOptional.get())
+    }
+
+    fun save(trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
+        return trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
     }
 }
