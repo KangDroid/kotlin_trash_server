@@ -50,6 +50,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-jpa")
     compile("com.h2database:h2")
     compile("org.springframework.session:spring-session-jdbc")
+    compile("org.jetbrains.kotlin:kotlin-reflect")
     testCompile("org.springframework.security:spring-security-test")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testImplementation(kotlin("test-junit"))
