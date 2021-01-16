@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.builtins.StandardNames.FqNames.annotation
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -15,6 +16,20 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.4.21"
+    kotlin("plugin.jpa") version "1.3.61"
+    kotlin("plugin.allopen") version "1.4.21"
+}
+
+noArg {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
+}
+
+allOpen {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
 }
 
 group = "me.kangdroid"
