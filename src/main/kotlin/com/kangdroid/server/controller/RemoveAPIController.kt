@@ -25,6 +25,7 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
     @PostMapping("/api/trash/data")
     fun postTrashData(@RequestBody trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
         trashDataSaveRequestDto.trashFileDirectory = removerService.checkTrashCan(trashDataSaveRequestDto.originalFileDirectory)
+        println(trashDataSaveRequestDto.trashFileDirectory)
         removerService.remove(trashDataSaveRequestDto)
         return trashDataService.save(trashDataSaveRequestDto)
     }

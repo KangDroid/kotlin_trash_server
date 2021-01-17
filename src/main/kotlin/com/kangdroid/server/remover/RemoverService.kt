@@ -7,7 +7,7 @@ import java.util.*
 
 class RemoverService {
     private val trashCanDirectory: String = "/Users/kangdroid/Desktop/test_trashcan"
-    private lateinit var trashList: Vector<String>
+    private var trashList: HashMap<String, String> = HashMap<String, String>()
 
     init {
         initData()
@@ -16,24 +16,26 @@ class RemoverService {
     private fun initData() {
         // Make a vector array
         File(trashCanDirectory).list()?.forEach {
-            trashList.add(it)
+            val fileObject: File = File(it)
+            trashList[fileObject.name] = fileObject.lastModified().toString()
         }
     }
 
     // Target: to delete, return final name
     fun checkTrashCan(target: String): String {
-        return if (target in trashList) {
+        val testFile: File = File(target)
+        return if (trashList.containsKey(testFile.name)) {
             // change name
-            val changedString: String = target + "_${LocalDateTime.now()}"
+            val changedString: String = testFile.name + "_${LocalDateTime.now()}"
             File(trashCanDirectory, changedString).absolutePath.toString()
         } else {
-            File(trashCanDirectory, target).absolutePath.toString()
+            File(trashCanDirectory, testFile.name).absolutePath.toString()
         }
     }
 
     fun remove(trashDataSaveRequestDto: TrashDataSaveRequestDto) {
         val fileOriginal: File = File(trashDataSaveRequestDto.originalFileDirectory)
-        fileOriginal.renameTo(File(trashDataSaveRequestDto.trashFileDirectory))
-        trashList.add(trashDataSaveRequestDto.trashFileDirectory)
+        fileOriginal.renameTo(fileOriginal)
+        trashList[fileOriginal.name] = fileOriginal.lastModified().toString()
     }
 }
