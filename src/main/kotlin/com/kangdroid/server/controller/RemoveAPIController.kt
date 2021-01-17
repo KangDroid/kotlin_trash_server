@@ -11,6 +11,11 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
 
     val removerService: RemoverService = RemoverService()
 
+    @GetMapping("/api/alive")
+    fun serverAlive(): String {
+        return "Server is Running!"
+    }
+
     @GetMapping("/api/trash/data/{id}")
     fun getEachData(@PathVariable id: Long): TrashDataResponseDto {
         return trashDataService.findById(id)

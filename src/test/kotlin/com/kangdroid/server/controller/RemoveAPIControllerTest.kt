@@ -10,6 +10,8 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.test.web.client.getForObject
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.test.context.junit4.SpringRunner
@@ -57,6 +59,16 @@ class RemoveAPIControllerTest {
         assertThat(trashData.cwdLocation).isEqualTo(cwdLocation)
         assertThat(trashData.originalFileDirectory).isEqualTo(originalDirectory)
         assertThat(trashData.trashFileDirectory).isEqualTo(trashFileDirectory)
+    }
+
+    @Test
+    fun serverAliveChecker() {
+        val url: String = "http://localhost:" + this.port + "/api/alive"
+        val restTemplate: TestRestTemplate = TestRestTemplate()
+        val response: String = restTemplate.getForObject(url, String::class.java)
+
+        // check
+        assertThat(response).isEqualTo("Server is Running!")
     }
 
 //    @Test
