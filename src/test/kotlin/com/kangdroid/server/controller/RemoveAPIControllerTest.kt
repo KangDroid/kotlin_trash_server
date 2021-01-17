@@ -59,28 +59,28 @@ class RemoveAPIControllerTest {
         assertThat(trashData.trashFileDirectory).isEqualTo(trashFileDirectory)
     }
 
-    @Test
-    fun postApiWorksWell() {
-        // let
-        val cwdLocation: String = "/home/kangdroid"
-        val originalDirectory: String = "/home/kangdroid/test.txt"
-        val trashFileDirectory: String = "/home/kangdroid/.Trash/test.txt"
-
-        val trashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
-            cwdLocation, originalDirectory
-        )
-
-        // when
-        val url: String = "http://localhost:" + this.port + "/api/trash/data"
-
-        mvc.perform(
-            post(url)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .content(ObjectMapper().writeValueAsString(trashDataSaveRequestDto))
-        ).andExpect(status().isOk)
-
-        val allList: List<TrashData> = trashDataRepository.findAll()
-        assertThat(allList.get(0).cwdLocation).isEqualTo(cwdLocation)
-        assertThat(allList.get(0).originalFileDirectory).isEqualTo(originalDirectory)
-    }
+//    @Test
+//    fun postApiWorksWell() {
+//        // let
+//        val cwdLocation: String = "/home/kangdroid"
+//        val originalDirectory: String = "/home/kangdroid/test.txt"
+//        val trashFileDirectory: String = "/home/kangdroid/.Trash/test.txt"
+//
+//        val trashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
+//            cwdLocation, originalDirectory
+//        )
+//
+//        // when
+//        val url: String = "http://localhost:" + this.port + "/api/trash/data"
+//
+//        mvc.perform(
+//            post(url)
+//                .contentType(MediaType.APPLICATION_JSON_UTF8)
+//                .content(ObjectMapper().writeValueAsString(trashDataSaveRequestDto))
+//        ).andExpect(status().isOk)
+//
+//        val allList: List<TrashData> = trashDataRepository.findAll()
+//        assertThat(allList.get(0).cwdLocation).isEqualTo(cwdLocation)
+//        assertThat(allList.get(0).originalFileDirectory).isEqualTo(originalDirectory)
+//    }
 }
