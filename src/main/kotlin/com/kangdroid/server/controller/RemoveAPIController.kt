@@ -22,6 +22,7 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
     }
 
     // This means erase files.
+    // TODO: Return path
     @PostMapping("/api/trash/data")
     fun postTrashData(@RequestBody trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
         trashDataSaveRequestDto.trashFileDirectory = removerService.checkTrashCan(trashDataSaveRequestDto.originalFileDirectory)

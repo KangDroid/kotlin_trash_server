@@ -35,7 +35,7 @@ class RemoverService {
 
     fun remove(trashDataSaveRequestDto: TrashDataSaveRequestDto) {
         val fileOriginal: File = File(trashDataSaveRequestDto.originalFileDirectory)
-        fileOriginal.renameTo(fileOriginal)
+        fileOriginal.renameTo(File(trashDataSaveRequestDto.trashFileDirectory))
         trashList[fileOriginal.name] = fileOriginal.lastModified().toString()
     }
 }
