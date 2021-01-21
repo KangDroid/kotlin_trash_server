@@ -51,6 +51,7 @@ dependencies {
     compile("com.h2database:h2")
     compile("org.springframework.session:spring-session-jdbc")
     compile("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
     testCompile("org.springframework.security:spring-security-test")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testImplementation(kotlin("test-junit"))
