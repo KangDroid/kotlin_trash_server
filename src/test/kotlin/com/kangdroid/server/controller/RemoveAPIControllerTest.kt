@@ -3,6 +3,7 @@ package com.kangdroid.server.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
+import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -69,6 +70,33 @@ class RemoveAPIControllerTest {
 
         // check
         assertThat(response).isEqualTo("Server is Running!")
+    }
+
+    @Test
+    fun getAllDataWorksWell() {
+        // let
+        val cwdLocation: String = "/home/kangdroid"
+        val originalDirectory: String = "/home/kangdroid/test.txt"
+        val trashFileDirectory: String = "/home/kangdroid/.Trash/test.txt"
+        val url: String = "http://localhost:" + this.port + "/api/trash/data/all"
+
+        // Register
+        trashDataRepository.save(
+            TrashData(
+                cwdLocation = cwdLocation,
+                originalFileDirectory = originalDirectory,
+                trashFileDirectory = trashFileDirectory
+            )
+        )
+
+        // Do work
+        val restTemplate: TestRestTemplate = TestRestTemplate()
+        val listData: Array<TrashData> = restTemplate.getForObject(url, Array<TrashData>::class.java)
+
+        // Assert
+        assertThat(listData[0].originalFileDirectory).isEqualTo(originalDirectory)
+        assertThat(listData[0].cwdLocation).isEqualTo(cwdLocation)
+        assertThat(listData[0].trashFileDirectory).isEqualTo(trashFileDirectory)
     }
 
 //    @Test

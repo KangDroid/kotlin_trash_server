@@ -23,6 +23,11 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
         return trashDataService.findById(id)
     }
 
+    @GetMapping("/api/trash/data/all")
+    fun getAllData(): List<TrashDataResponseDto> {
+        return trashDataService.findAllDesc()
+    }
+
     // This means erase files.
     // TODO: Return path
     @PostMapping("/api/trash/data")
