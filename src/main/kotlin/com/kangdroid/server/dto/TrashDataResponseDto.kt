@@ -13,7 +13,7 @@ class TrashDataResponseDto(
         entity.id,
         entity.cwdLocation,
         entity.originalFileDirectory,
-        entity .trashFileDirectory
+        entity.trashFileDirectory
     )
 
     fun toEntity(): TrashData {

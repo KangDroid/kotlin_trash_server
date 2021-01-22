@@ -5,11 +5,13 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
 import com.kangdroid.server.service.TrashDataService
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
-import java.util.*
 
 @Component
 class RemoverService(private val dataService: TrashDataService) {
@@ -35,7 +37,7 @@ class RemoverService(private val dataService: TrashDataService) {
         File(trashCanDirectory).list()?.forEach {
             val fileObject: File = File(it)
             val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto("EXTERNAL", "EXTERNAL")
-            tmpTrashDataSaveRequestDto.trashFileDirectory = fileObject.absolutePath.toString()
+            tmpTrashDataSaveRequestDto.trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
             dataService.save(tmpTrashDataSaveRequestDto)
         }
     }
@@ -69,6 +71,7 @@ class RemoverService(private val dataService: TrashDataService) {
             println("Something went wrong.")
         }
     }
+
     fun restartService() {
         pollList()
     }

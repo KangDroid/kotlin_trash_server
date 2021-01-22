@@ -6,9 +6,9 @@ import javax.persistence.*
 class TrashData(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 20,
+    var id: Long = Long.MAX_VALUE,
 
-    @Column(length = 500, nullable =  false)
+    @Column(length = 500, nullable = false)
     var cwdLocation: String,
 
     @Column(length = 500, nullable = false)

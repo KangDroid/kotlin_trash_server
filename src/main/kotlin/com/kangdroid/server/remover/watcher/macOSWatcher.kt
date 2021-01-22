@@ -1,9 +1,9 @@
 package com.kangdroid.server.remover.watcher
 
 import com.kangdroid.server.service.TrashDataService
-import kotlin.system.exitProcess
 
-class macOSWatcher(trashDirectory: String, inputDataService: TrashDataService): InternalFileWatcher(trashDirectory, inputDataService) {
+class macOSWatcher(trashDirectory: String, inputDataService: TrashDataService) :
+    InternalFileWatcher(trashDirectory, inputDataService) {
     var process: Process? = null
 
     protected fun finalize() {

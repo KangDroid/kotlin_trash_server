@@ -1,10 +1,7 @@
 package com.kangdroid.server.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
-import com.kangdroid.server.dto.TrashDataResponseDto
-import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,13 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.test.web.client.getForObject
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.MediaType
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @AutoConfigureMockMvc
 @RunWith(SpringRunner::class)

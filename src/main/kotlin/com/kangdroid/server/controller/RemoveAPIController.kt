@@ -4,8 +4,6 @@ import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
 import com.kangdroid.server.service.TrashDataService
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
@@ -34,7 +32,8 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
     // TODO: Return path
     @PostMapping("/api/trash/data")
     fun postTrashData(@RequestBody trashDataSaveRequestDto: TrashDataSaveRequestDto): String {
-        trashDataSaveRequestDto.trashFileDirectory = removerService.checkTrashCan(trashDataSaveRequestDto.originalFileDirectory)
+        trashDataSaveRequestDto.trashFileDirectory =
+            removerService.checkTrashCan(trashDataSaveRequestDto.originalFileDirectory)
         removerService.remove(trashDataSaveRequestDto)
         trashDataService.save(trashDataSaveRequestDto)
         removerService.restartService()

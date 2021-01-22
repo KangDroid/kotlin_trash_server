@@ -12,7 +12,8 @@ import java.util.stream.Collectors
 @Service
 class TrashDataService(val trashDataRepository: TrashDataRepository) {
     fun findById(id: Long): TrashDataResponseDto {
-        val entityOptional: Optional<TrashData> = trashDataRepository.findById(id) ?: throw IllegalArgumentException("No such ID: $id")
+        val entityOptional: Optional<TrashData> =
+            trashDataRepository.findById(id) ?: throw IllegalArgumentException("No such ID: $id")
 
         return TrashDataResponseDto(entityOptional.get())
     }

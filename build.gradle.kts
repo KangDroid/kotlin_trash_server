@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.builtins.StandardNames.FqNames.annotation
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {

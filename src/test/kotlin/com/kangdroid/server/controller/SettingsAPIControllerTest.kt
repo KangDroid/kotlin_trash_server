@@ -33,7 +33,7 @@ class SettingsAPIControllerTest {
     fun isGetApiWorksWell() {
         // Let
         val serverSettings: Settings = Settings
-        with (serverSettings) {
+        with(serverSettings) {
             trashCanPath = "/Users/kangdroid/Desktop/test_trashcan"
         }
 
@@ -52,7 +52,7 @@ class SettingsAPIControllerTest {
     fun isPostSettingsWorksWell() {
         // Let
         val serverSettings: Settings = Settings
-        with (serverSettings) {
+        with(serverSettings) {
             trashCanPath = "/Users/kangdroid/Desktop/test_trashcan"
         }
 
@@ -63,9 +63,10 @@ class SettingsAPIControllerTest {
         val url: String = "http://localhost:" + this.port + "/api/settings/set"
 
         // do
-        mvc.perform(put(url)
-            .contentType(MediaType.APPLICATION_JSON_UTF8)
-            .content(ObjectMapper().writeValueAsString(settingsRequest))
+        mvc.perform(
+            put(url)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(ObjectMapper().writeValueAsString(settingsRequest))
 
         ).andExpect(status().isOk)
 
