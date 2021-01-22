@@ -15,4 +15,13 @@ class TrashDataResponseDto(
         entity.originalFileDirectory,
         entity .trashFileDirectory
     )
+
+    fun toEntity(): TrashData {
+        return TrashData(
+            id = this.id,
+            cwdLocation = this.cwdLocation,
+            trashFileDirectory = this.trashFileDirectory,
+            originalFileDirectory = this.originalFileDirectory
+        )
+    }
 }

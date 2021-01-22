@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 class RemoveAPIController(val trashDataService: TrashDataService) {
 
-    val removerService: RemoverService = RemoverService()
+    val removerService: RemoverService = RemoverService(trashDataService)
 
     @GetMapping("/api/alive")
     fun serverAlive(): String {

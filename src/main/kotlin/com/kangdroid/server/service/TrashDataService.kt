@@ -27,4 +27,15 @@ class TrashDataService(val trashDataRepository: TrashDataRepository) {
             .map { TrashDataResponseDto(it) }
             .collect(Collectors.toList())
     }
+
+    @Transactional(readOnly = true)
+    fun findByTrashFileDirectory(input: String): List<TrashDataResponseDto> {
+        return trashDataRepository.findByTrashFileDirectoryEquals(input).stream()
+            .map { TrashDataResponseDto(it) }
+            .collect(Collectors.toList())
+    }
+
+    fun removeByEntity(entity: TrashData) {
+        trashDataRepository.delete(entity)
+    }
 }

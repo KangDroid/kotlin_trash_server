@@ -1,5 +1,8 @@
 package com.kangdroid.server.remover.watcher
 
+import com.kangdroid.server.dto.TrashDataResponseDto
+import com.kangdroid.server.dto.TrashDataSaveRequestDto
+import com.kangdroid.server.service.TrashDataService
 import com.sun.nio.file.SensitivityWatchEventModifier
 import java.io.File
 import java.nio.file.*
@@ -8,7 +11,7 @@ import java.nio.file.*
  * This class is for OS does not support
  * LIVE File watching from me.
  */
-class JVMWatcher(trashDirectory: String): InternalFileWatcher(trashDirectory) {
+class JVMWatcher(trashDirectory: String, inputDataService: TrashDataService): InternalFileWatcher(trashDirectory, inputDataService) {
     var watchKey: WatchKey? = null
 
     override fun watchFolder() {
@@ -45,14 +48,21 @@ class JVMWatcher(trashDirectory: String): InternalFileWatcher(trashDirectory) {
 
                     when (kind) {
                         StandardWatchEventKinds.ENTRY_CREATE -> {
-                            if (!regTrashList.containsKey(fileObject.name)) {
-                                regTrashList.set(fileObject.name, fileObject.lastModified().toString())
+                            val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
+                            val listResponse: List<TrashDataResponseDto> = dataService.findByTrashFileDirectory(expectedLocation)
+                            if (listResponse.isEmpty()) {
+                                val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto("EXTERNAL", "EXTERNAL")
+                                tmpTrashDataSaveRequestDto.trashFileDirectory = expectedLocation
+                                dataService.save(tmpTrashDataSaveRequestDto)
                                 println("Created: ${fileObject.name}")
                             }
                         }
                         StandardWatchEventKinds.ENTRY_DELETE -> {
-                            if (regTrashList.containsKey(fileObject.name)) {
-                                regTrashList.remove(fileObject.name)
+                            val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
+                            val listResponse: List<TrashDataResponseDto> = dataService.findByTrashFileDirectory(expectedLocation)
+
+                            if (listResponse.isNotEmpty()) {
+                                dataService.removeByEntity(listResponse[0].toEntity())
                                 println("Removed: $directory")
                             }
                         }
