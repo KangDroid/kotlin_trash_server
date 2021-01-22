@@ -6,10 +6,12 @@ import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
 import com.kangdroid.server.service.TrashDataService
 import kotlinx.coroutines.*
+import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
 import java.util.*
 
+@Component
 class RemoverService(private val dataService: TrashDataService) {
     private val trashCanDirectory: String = "/Users/kangdroid/Desktop/test_trashcan"
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)

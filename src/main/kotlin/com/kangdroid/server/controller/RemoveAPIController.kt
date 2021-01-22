@@ -6,12 +6,14 @@ import com.kangdroid.server.remover.RemoverService
 import com.kangdroid.server.service.TrashDataService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class RemoveAPIController(val trashDataService: TrashDataService) {
 
-    val removerService: RemoverService = RemoverService(trashDataService)
+    @Autowired
+    private lateinit var removerService: RemoverService
 
     @GetMapping("/api/alive")
     fun serverAlive(): String {
