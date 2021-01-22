@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
+import javax.annotation.PreDestroy
 
 @Component
 class RemoverService(private val dataService: TrashDataService) {
@@ -19,14 +20,16 @@ class RemoverService(private val dataService: TrashDataService) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private lateinit var syncJob: Job
     private var internalFileWatcher: InternalFileWatcher? = null
+    val trashList: HashMap<String, TrashDataSaveRequestDto> = HashMap()
 
     init {
+        initMap()
         initData()
         pollList()
     }
 
     private fun pollList() {
-        internalFileWatcher = JVMWatcher(trashCanDirectory, dataService)
+        internalFileWatcher = JVMWatcher(trashCanDirectory, trashList)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
             internalFileWatcher?.watchFolder()
         }
@@ -36,12 +39,40 @@ class RemoverService(private val dataService: TrashDataService) {
         // Make a vector array
         File(trashCanDirectory).list()?.forEach {
             val fileObject: File = File(it)
-            val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
-                cwdLocation = "EXTERNAL",
-                originalFileDirectory = "EXTERNAL",
-                trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
-            )
-            dataService.save(tmpTrashDataSaveRequestDto)
+
+            // When there is unknown files/folder --> Save it to DB[With EXTERNAL keyword]
+            if (!trashList.containsKey("${trashCanDirectory}/${fileObject.name}")) {
+                val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
+                    cwdLocation = "EXTERNAL",
+                    originalFileDirectory = "EXTERNAL",
+                    trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
+                )
+                trashList["${trashCanDirectory}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
+            }
+        }
+    }
+
+    @PreDestroy
+    fun saveBackToDb() {
+        println("Saving back!")
+        dataService.deleteAll()
+        trashList.forEach { (_, v) ->
+            dataService.save(v)
+        }
+    }
+
+    private fun initMap() {
+        val dbData: List<TrashDataResponseDto> = dataService.findAllDesc(this)
+
+        for (response in dbData) {
+            if (File(response.trashFileDirectory).exists()) {
+                trashList[response.trashFileDirectory] = TrashDataSaveRequestDto(
+                    id = response.id,
+                    cwdLocation = response.cwdLocation,
+                    originalFileDirectory = response.originalFileDirectory,
+                    trashFileDirectory = response.trashFileDirectory
+                )
+            }
         }
     }
 
@@ -55,9 +86,8 @@ class RemoverService(private val dataService: TrashDataService) {
 
         val testFile: File = File(target)
         val expectLocation: String = File(trashCanDirectory, testFile.name).absolutePath.toString()
-        val listResponse: List<TrashDataResponseDto> = dataService.findByTrashFileDirectory(expectLocation)
 
-        return if (listResponse.isNotEmpty()) {
+        return if (trashList.containsKey(expectLocation)) {
             // Change Name
             val changedString: String = testFile.name + "_${LocalDateTime.now()}"
             File(trashCanDirectory, changedString).absolutePath.toString()
@@ -70,6 +100,15 @@ class RemoverService(private val dataService: TrashDataService) {
     fun remove(trashDataSaveRequestDto: TrashDataSaveRequestDto) {
         val fileOriginal: File = File(trashDataSaveRequestDto.originalFileDirectory)
         val targetFile: File = File(trashDataSaveRequestDto.trashFileDirectory)
+
+        with(trashDataSaveRequestDto) {
+            trashList[trashFileDirectory!!] = TrashDataSaveRequestDto(
+                cwdLocation = cwdLocation,
+                originalFileDirectory = originalFileDirectory,
+                trashFileDirectory = trashFileDirectory
+            )
+        }
+
         if (!fileOriginal.renameTo(targetFile)) {
             println("Something went wrong.")
         }

@@ -3,6 +3,7 @@ package com.kangdroid.server.controller
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

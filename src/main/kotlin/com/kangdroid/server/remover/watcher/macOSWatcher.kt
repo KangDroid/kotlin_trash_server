@@ -1,9 +1,10 @@
 package com.kangdroid.server.remover.watcher
 
+import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 
-class macOSWatcher(trashDirectory: String, inputDataService: TrashDataService) :
-    InternalFileWatcher(trashDirectory, inputDataService) {
+class macOSWatcher(trashDirectory: String, trashList: HashMap<String, TrashDataSaveRequestDto>) :
+    InternalFileWatcher(trashDirectory, trashList) {
     var process: Process? = null
 
     protected fun finalize() {

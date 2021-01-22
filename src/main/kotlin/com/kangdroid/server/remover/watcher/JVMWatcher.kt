@@ -11,8 +11,8 @@ import java.nio.file.*
  * This class is for OS does not support
  * LIVE File watching from me.
  */
-class JVMWatcher(trashDirectory: String, inputDataService: TrashDataService) :
-    InternalFileWatcher(trashDirectory, inputDataService) {
+class JVMWatcher(trashDirectory: String, trashList: HashMap<String, TrashDataSaveRequestDto>) :
+    InternalFileWatcher(trashDirectory, trashList) {
     var watchKey: WatchKey? = null
 
     override fun watchFolder() {
@@ -58,22 +58,20 @@ class JVMWatcher(trashDirectory: String, inputDataService: TrashDataService) :
                     when (kind) {
                         StandardWatchEventKinds.ENTRY_CREATE -> {
                             val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
-                            val listResponse: List<TrashDataResponseDto> =
-                                dataService.findByTrashFileDirectory(expectedLocation)
-                            if (listResponse.isEmpty()) {
-                                val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto =
-                                    TrashDataSaveRequestDto(cwdLocation = "EXTERNAL", originalFileDirectory = "EXTERNAL", trashFileDirectory = expectedLocation)
-                                dataService.save(tmpTrashDataSaveRequestDto)
+                            if (!trashList.containsKey(expectedLocation)) {
+                                trashList[expectedLocation] = TrashDataSaveRequestDto(
+                                    cwdLocation = "EXTERNAL",
+                                    originalFileDirectory = "EXTERNAL",
+                                    trashFileDirectory = expectedLocation
+                                )
                                 println("Created: ${fileObject.name}")
                             }
                         }
                         StandardWatchEventKinds.ENTRY_DELETE -> {
                             val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
-                            val listResponse: List<TrashDataResponseDto> =
-                                dataService.findByTrashFileDirectory(expectedLocation)
 
-                            if (listResponse.isNotEmpty()) {
-                                dataService.removeByEntity(listResponse[0].toEntity())
+                            if (trashList.containsKey(expectedLocation)) {
+                                trashList.remove(expectedLocation)
                                 println("Removed: $directory")
                             }
                         }
