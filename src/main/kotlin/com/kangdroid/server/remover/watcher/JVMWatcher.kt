@@ -62,8 +62,7 @@ class JVMWatcher(trashDirectory: String, inputDataService: TrashDataService) :
                                 dataService.findByTrashFileDirectory(expectedLocation)
                             if (listResponse.isEmpty()) {
                                 val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto =
-                                    TrashDataSaveRequestDto("EXTERNAL", "EXTERNAL")
-                                tmpTrashDataSaveRequestDto.trashFileDirectory = expectedLocation
+                                    TrashDataSaveRequestDto(cwdLocation = "EXTERNAL", originalFileDirectory = "EXTERNAL", trashFileDirectory = expectedLocation)
                                 dataService.save(tmpTrashDataSaveRequestDto)
                                 println("Created: ${fileObject.name}")
                             }

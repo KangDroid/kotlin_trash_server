@@ -3,6 +3,7 @@ package com.kangdroid.server.controller
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +28,11 @@ class RemoveAPIControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    @Before
+    fun cleanDb() {
+        trashDataRepository.deleteAll()
+    }
+
     @Test
     fun getApiWorksWell() {
         // let
@@ -49,7 +55,6 @@ class RemoveAPIControllerTest {
         // then
         val trashData: TrashData = trashList.get(0)
 
-        assertThat(trashData.id).isEqualTo(1)
         assertThat(trashData.cwdLocation).isEqualTo(cwdLocation)
         assertThat(trashData.originalFileDirectory).isEqualTo(originalDirectory)
         assertThat(trashData.trashFileDirectory).isEqualTo(trashFileDirectory)

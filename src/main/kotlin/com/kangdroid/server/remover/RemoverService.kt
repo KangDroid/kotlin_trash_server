@@ -36,8 +36,11 @@ class RemoverService(private val dataService: TrashDataService) {
         // Make a vector array
         File(trashCanDirectory).list()?.forEach {
             val fileObject: File = File(it)
-            val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto("EXTERNAL", "EXTERNAL")
-            tmpTrashDataSaveRequestDto.trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
+            val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
+                cwdLocation = "EXTERNAL",
+                originalFileDirectory = "EXTERNAL",
+                trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
+            )
             dataService.save(tmpTrashDataSaveRequestDto)
         }
     }
