@@ -63,8 +63,7 @@ class RemoverService(private val dataService: TrashDataService) {
     }
 
     private fun initMap() {
-        val dbData: List<TrashDataResponseDto> = dataService.findAllDesc(this)
-
+        val dbData: List<TrashDataResponseDto> = dataService.findAllDescDb()
         for (response in dbData) {
             if (File(response.trashFileDirectory).exists()) {
                 trashList[response.trashFileDirectory] = TrashDataSaveRequestDto(
