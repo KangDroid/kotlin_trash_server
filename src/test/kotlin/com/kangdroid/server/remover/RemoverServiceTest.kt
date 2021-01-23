@@ -105,4 +105,32 @@ class RemoverServiceTest {
             fileObject.delete()
         }
     }
+
+    @Test
+    fun checkTrashCanWorksWellNormal() {
+        // Let
+        val testFileLocation: String = "/tmp/test.txt"
+        val removerService: RemoverService = RemoverService(dataService)
+        // make sure there is no test.txt on target location.
+        val fileObject: File = File(Settings.trashCanPath, File(testFileLocation).name)
+        if (fileObject.exists()) {
+            fileObject.delete()
+        }
+
+        // test it.
+        assertThat(removerService.checkTrashCan(testFileLocation)).isEqualTo(fileObject.absolutePath.toString())
+    }
+
+    @Test
+    fun checkTrashCnWorksWellDuplicate() {
+        // Let
+        val testFileLocation: String = "/tmp/test.txt"
+        val removerService: RemoverService = RemoverService(dataService)
+        // Add testfileLocation to hashMap
+        val fileObject: File = File(Settings.trashCanPath, File(testFileLocation).name)
+        removerService.trashList[fileObject.absolutePath.toString()] = TrashDataSaveRequestDto() // empty should work.
+
+        // test it.
+        assertThat(removerService.checkTrashCan(testFileLocation)).isNotEqualTo(fileObject.absolutePath.toString())
+    }
 }
