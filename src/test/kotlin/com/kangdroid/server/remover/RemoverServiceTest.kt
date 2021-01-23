@@ -6,6 +6,7 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,10 +27,14 @@ class RemoverServiceTest {
     @Autowired
     private lateinit var dataService: TrashDataService
 
+    @Before
+    fun initTest() {
+        Settings.trashCanPath = "/tmp"
+    }
+
     @Test
     fun initMapWorksWell() {
         // Let
-        Settings.trashCanPath = "/tmp"
         val testCwdLocation: String = "/tmp"
         val testOriginalFileDirectory: String = "/tmp/test.txt"
         val testTrashFileDirectory: String = "${Settings.trashCanPath}/test.txt"
@@ -65,6 +70,40 @@ class RemoverServiceTest {
         assertThat(valueToCheck.trashFileDirectory).isEqualTo(testTrashFileDirectory)
         assertThat(valueToCheck.cwdLocation).isEqualTo(testCwdLocation)
         assertThat(valueToCheck.originalFileDirectory).isEqualTo(testOriginalFileDirectory)
+
+        if (fileObject.exists()) {
+            fileObject.delete()
+        }
+    }
+
+    @Test
+    fun initDataWorksWell() {
+        // after init map, initdata looks for any externally-new added file.
+        val targetTestFile: String = "${Settings.trashCanPath}/KDRTestFileAfter.txt"
+        val fileObject: File = File(targetTestFile)
+
+        if (!fileObject.exists()) {
+            fileObject.createNewFile()
+        }
+
+        val removerService: RemoverService = RemoverService(dataService)
+        val methodToTest: Method = removerService.javaClass.getDeclaredMethod("initData")
+        methodToTest.isAccessible = true
+
+        // Execute
+        methodToTest.invoke(removerService)
+
+        val filedToGet: Field = removerService.javaClass.getDeclaredField("trashList")
+        filedToGet.isAccessible = true
+        val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = filedToGet.get(removerService) as ConcurrentHashMap<String, TrashDataSaveRequestDto>
+
+        //Assert
+        assertThat(trashList.containsKey(targetTestFile)).isEqualTo(true)
+
+        val testObject: TrashDataSaveRequestDto = trashList[targetTestFile]!!
+        assertThat(testObject.trashFileDirectory).isEqualTo(targetTestFile)
+        assertThat(testObject.cwdLocation).isEqualTo("EXTERNAL")
+        assertThat(testObject.originalFileDirectory).isEqualTo("EXTERNAL")
 
         if (fileObject.exists()) {
             fileObject.delete()
