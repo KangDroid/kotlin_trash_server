@@ -52,6 +52,7 @@ dependencies {
     runtimeOnly("mysql:mysql-connector-java")
     testCompile("org.springframework.security:spring-security-test")
     testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("com.h2database:h2")
     testImplementation(kotlin("test-junit"))
 }
 
