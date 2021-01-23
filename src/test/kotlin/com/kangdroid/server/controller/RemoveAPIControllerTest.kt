@@ -2,6 +2,8 @@ package com.kangdroid.server.controller
 
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
+import com.kangdroid.server.dto.TrashDataSaveRequestDto
+import com.kangdroid.server.remover.RemoverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
@@ -29,9 +31,12 @@ class RemoveAPIControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    @Autowired
+    private lateinit var removerService: RemoverService
+
     @Before
     fun cleanDb() {
-        trashDataRepository.deleteAll()
+        removerService.trashList.clear()
     }
 
     @Test
@@ -80,12 +85,11 @@ class RemoveAPIControllerTest {
         val url: String = "http://localhost:" + this.port + "/api/trash/data/all"
 
         // Register
-        trashDataRepository.save(
-            TrashData(
-                cwdLocation = cwdLocation,
-                originalFileDirectory = originalDirectory,
-                trashFileDirectory = trashFileDirectory
-            )
+        removerService.trashList[trashFileDirectory] = TrashDataSaveRequestDto(
+            id = 0,
+            cwdLocation = cwdLocation,
+            originalFileDirectory = originalDirectory,
+            trashFileDirectory = trashFileDirectory
         )
 
         // Do work
