@@ -6,12 +6,13 @@ import com.kangdroid.server.service.TrashDataService
 import com.sun.nio.file.SensitivityWatchEventModifier
 import java.io.File
 import java.nio.file.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is for OS does not support
  * LIVE File watching from me.
  */
-class JVMWatcher(trashDirectory: String, trashList: HashMap<String, TrashDataSaveRequestDto>) :
+class JVMWatcher(trashDirectory: String, trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto>) :
     InternalFileWatcher(trashDirectory, trashList) {
     var watchKey: WatchKey? = null
 

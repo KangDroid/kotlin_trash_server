@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PreDestroy
 
 @Component
@@ -20,7 +21,7 @@ class RemoverService(private val dataService: TrashDataService) {
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private lateinit var syncJob: Job
     private var internalFileWatcher: InternalFileWatcher? = null
-    val trashList: HashMap<String, TrashDataSaveRequestDto> = HashMap()
+    val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
 
     init {
         initMap()

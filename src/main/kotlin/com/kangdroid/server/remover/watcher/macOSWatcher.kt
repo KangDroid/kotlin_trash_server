@@ -2,8 +2,9 @@ package com.kangdroid.server.remover.watcher
 
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
+import java.util.concurrent.ConcurrentHashMap
 
-class macOSWatcher(trashDirectory: String, trashList: HashMap<String, TrashDataSaveRequestDto>) :
+class macOSWatcher(trashDirectory: String, trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto>) :
     InternalFileWatcher(trashDirectory, trashList) {
     var process: Process? = null
 
