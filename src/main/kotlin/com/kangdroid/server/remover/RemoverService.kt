@@ -5,6 +5,7 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
 import com.kangdroid.server.service.TrashDataService
+import com.kangdroid.server.settings.Settings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,7 +18,6 @@ import javax.annotation.PreDestroy
 
 @Component
 class RemoverService(private val dataService: TrashDataService) {
-    private val trashCanDirectory: String = "/Users/kangdroid/Desktop/test_trashcan"
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private lateinit var syncJob: Job
     private var internalFileWatcher: InternalFileWatcher? = null
@@ -30,7 +30,7 @@ class RemoverService(private val dataService: TrashDataService) {
     }
 
     private fun pollList() {
-        internalFileWatcher = JVMWatcher(trashCanDirectory, trashList)
+        internalFileWatcher = JVMWatcher(Settings.trashCanPath, trashList)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
             internalFileWatcher?.watchFolder()
         }
@@ -38,17 +38,17 @@ class RemoverService(private val dataService: TrashDataService) {
 
     private fun initData() {
         // Make a vector array
-        File(trashCanDirectory).list()?.forEach {
+        File(Settings.trashCanPath).list()?.forEach {
             val fileObject: File = File(it)
 
             // When there is unknown files/folder --> Save it to DB[With EXTERNAL keyword]
-            if (!trashList.containsKey("${trashCanDirectory}/${fileObject.name}")) {
+            if (!trashList.containsKey("${Settings.trashCanPath}/${fileObject.name}")) {
                 val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
                     cwdLocation = "EXTERNAL",
                     originalFileDirectory = "EXTERNAL",
-                    trashFileDirectory = "${trashCanDirectory}/${fileObject.name}"
+                    trashFileDirectory = "${Settings.trashCanPath}/${fileObject.name}"
                 )
-                trashList["${trashCanDirectory}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
+                trashList["${Settings.trashCanPath}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
             }
         }
     }
@@ -85,12 +85,12 @@ class RemoverService(private val dataService: TrashDataService) {
         }
 
         val testFile: File = File(target)
-        val expectLocation: String = File(trashCanDirectory, testFile.name).absolutePath.toString()
+        val expectLocation: String = File(Settings.trashCanPath, testFile.name).absolutePath.toString()
 
         return if (trashList.containsKey(expectLocation)) {
             // Change Name
             val changedString: String = testFile.name + "_${LocalDateTime.now()}"
-            File(trashCanDirectory, changedString).absolutePath.toString()
+            File(Settings.trashCanPath, changedString).absolutePath.toString()
         } else {
             // Just use expect location
             expectLocation
