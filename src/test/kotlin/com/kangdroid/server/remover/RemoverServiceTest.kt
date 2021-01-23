@@ -59,9 +59,7 @@ class RemoverServiceTest {
         methodToTest.invoke(removerService)
 
         // Get Values
-        val filedToGet: Field = removerService.javaClass.getDeclaredField("trashList")
-        filedToGet.isAccessible = true
-        val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = filedToGet.get(removerService) as ConcurrentHashMap<String, TrashDataSaveRequestDto>
+        val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = removerService.trashList
 
         // Assert!
         assertThat(trashList.containsKey(testTrashFileDirectory)).isEqualTo(true)
@@ -93,9 +91,7 @@ class RemoverServiceTest {
         // Execute
         methodToTest.invoke(removerService)
 
-        val filedToGet: Field = removerService.javaClass.getDeclaredField("trashList")
-        filedToGet.isAccessible = true
-        val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = filedToGet.get(removerService) as ConcurrentHashMap<String, TrashDataSaveRequestDto>
+        val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = removerService.trashList
 
         //Assert
         assertThat(trashList.containsKey(targetTestFile)).isEqualTo(true)
