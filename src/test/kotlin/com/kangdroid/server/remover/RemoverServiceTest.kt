@@ -2,6 +2,7 @@ package com.kangdroid.server.remover
 
 import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
+import com.kangdroid.server.dto.TrashDataRestoreRequestDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
@@ -132,5 +133,94 @@ class RemoverServiceTest {
 
         // test it.
         assertThat(removerService.checkTrashCan(testFileLocation)).isNotEqualTo(fileObject.absolutePath.toString())
+    }
+
+    @Test
+    fun isRestoreWorkingWellTrue() {
+        // Let
+        val testFileObject: File = File(Settings.trashCanPath, "KDRtest.txt").also {
+            if (!it.exists()) {
+                it.createNewFile()
+            }
+        }
+        val removerService: RemoverService = RemoverService(dataService).also {
+            it.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
+                id = 0,
+                cwdLocation = "TEST",
+                originalFileDirectory = "/tmp/Test2.txt",
+                trashFileDirectory = testFileObject.absolutePath
+            )
+        }
+        val innerCount: Int = removerService.trashList.size
+
+        val returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
+
+        // Assert
+        val targetFileObject: File = File("/tmp/Test2.txt")
+        assertThat(returnMessage).isEqualTo(removerService.RESTORE_FULL_SUCCESS)
+        assertThat(removerService.trashList.size).isEqualTo(innerCount-1)
+        assertThat(targetFileObject.exists()).isEqualTo(true)
+        assertThat(testFileObject.exists()).isEqualTo(false)
+
+        // Cleanup
+        if (testFileObject.exists()) {
+            testFileObject.delete()
+        }
+
+        if (targetFileObject.exists()) {
+            targetFileObject.delete()
+        }
+    }
+
+    @Test
+    fun isRestoreWorkingWellFalse() {
+        // Let
+        val testFileObject: File = File(Settings.trashCanPath, "KDRtest.txt").also {
+            if (!it.exists()) {
+                it.createNewFile()
+            }
+        }
+
+        val targetFileAddition: File = File("/tmp/Test2.txt").also {
+            if (!it.exists()) {
+                it.createNewFile()
+            }
+        }
+
+        val removerService: RemoverService = RemoverService(dataService).also {
+            it.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
+                id = 0,
+                cwdLocation = "TEST",
+                originalFileDirectory = "/tmp/Test2.txt",
+                trashFileDirectory = testFileObject.absolutePath
+            )
+        }
+        val innerCount: Int = removerService.trashList.size
+
+        var returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
+
+        // Assert - TARGET_EXISTS
+        assertThat(returnMessage).isEqualTo(removerService.RESTORE_TARGET_EXISTS)
+        assertThat(removerService.trashList.size).isEqualTo(innerCount)
+        assertThat(targetFileAddition.exists()).isEqualTo(true)
+        assertThat(testFileObject.exists()).isEqualTo(true)
+
+        // Assert - TARGET NOT ON MAP
+        removerService.trashList.clear()
+        returnMessage = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
+        assertThat(returnMessage).isEqualTo(removerService.RESTORE_TARGET_NOT_ON_MAP)
+        assertThat(removerService.trashList.size).isEqualTo(0)
+        assertThat(targetFileAddition.exists()).isEqualTo(true)
+        assertThat(testFileObject.exists()).isEqualTo(true)
+
+
+        // Cleanup
+        if (testFileObject.exists()) {
+            testFileObject.delete()
+        }
+
+        if (targetFileAddition.exists()) {
+            targetFileAddition.delete()
+        }
     }
 }

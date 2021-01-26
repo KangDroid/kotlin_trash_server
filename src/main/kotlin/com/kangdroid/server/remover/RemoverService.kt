@@ -1,6 +1,7 @@
 package com.kangdroid.server.remover
 
 import com.kangdroid.server.dto.TrashDataResponseDto
+import com.kangdroid.server.dto.TrashDataRestoreRequestDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
@@ -22,6 +23,10 @@ class RemoverService(private val dataService: TrashDataService) {
     private lateinit var syncJob: Job
     private var internalFileWatcher: InternalFileWatcher? = null
     val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
+    val RESTORE_TARGET_EXISTS: String = "Restore Target already exists!"
+    val RESTORE_TARGET_NOT_ON_MAP: String = "Restore Target is not on server!"
+    val RESTORE_RENAME_FAIL: String = "Renaming file failed."
+    val RESTORE_FULL_SUCCESS: String = "Restore Complete."
 
     init {
         initMap()
@@ -113,6 +118,26 @@ class RemoverService(private val dataService: TrashDataService) {
             println("Something went wrong.")
         }
     }
+
+    fun restore(trashDataRestoreRequestDto: TrashDataRestoreRequestDto): String {
+        val trashDataSaveRequestDto: TrashDataSaveRequestDto = trashList[trashDataRestoreRequestDto.trashFileDirectory] ?: return RESTORE_TARGET_NOT_ON_MAP
+        val originalFileObject: File = File(trashDataSaveRequestDto.originalFileDirectory)
+        if (originalFileObject.exists()) {
+            return RESTORE_TARGET_EXISTS
+        }
+
+        // Restore!
+        val trashFileObject = File(trashDataSaveRequestDto.trashFileDirectory!!)
+
+
+        return if (trashFileObject.renameTo(File(trashDataSaveRequestDto.originalFileDirectory))) {
+            trashList.remove(trashDataSaveRequestDto.trashFileDirectory)
+            RESTORE_FULL_SUCCESS
+        } else {
+            RESTORE_RENAME_FAIL
+        }
+    }
+
 
     fun restartService() {
         pollList()

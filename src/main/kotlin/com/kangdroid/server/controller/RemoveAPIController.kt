@@ -1,6 +1,7 @@
 package com.kangdroid.server.controller
 
 import com.kangdroid.server.dto.TrashDataResponseDto
+import com.kangdroid.server.dto.TrashDataRestoreRequestDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
 import com.kangdroid.server.service.TrashDataService
@@ -37,5 +38,10 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
         removerService.remove(trashDataSaveRequestDto)
         removerService.restartService()
         return trashDataSaveRequestDto.trashFileDirectory!!
+    }
+
+    @PostMapping("/api/trash/data/restore")
+    fun restoreFile(@RequestBody trashDataRestoreRequestDto: TrashDataRestoreRequestDto): String {
+        return removerService.restore(trashDataRestoreRequestDto)
     }
 }
