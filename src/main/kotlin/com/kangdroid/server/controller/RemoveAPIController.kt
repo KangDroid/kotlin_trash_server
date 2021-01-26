@@ -44,4 +44,9 @@ class RemoveAPIController(val trashDataService: TrashDataService) {
     fun restoreFile(@RequestBody trashDataRestoreRequestDto: TrashDataRestoreRequestDto): String {
         return removerService.restore(trashDataRestoreRequestDto)
     }
+
+    @DeleteMapping("/api/trash/data/empty")
+    fun deleteAllFile(): Boolean {
+        return removerService.emptyTrashCan()
+    }
 }

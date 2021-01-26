@@ -138,6 +138,18 @@ class RemoverService(private val dataService: TrashDataService) {
         }
     }
 
+    fun emptyTrashCan(): Boolean {
+        var returnValue: Boolean = true
+        for ((k, v) in trashList) {
+            returnValue = File(k).deleteRecursively()
+        }
+
+        // clear all data
+        trashList.clear()
+
+        return returnValue
+    }
+
 
     fun restartService() {
         pollList()
