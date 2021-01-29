@@ -7,4 +7,5 @@ import org.springframework.stereotype.Component
 @Component
 class Settings {
     lateinit var trashPath: String
+    val serverVersion: String = "V1.0.0"
 }
