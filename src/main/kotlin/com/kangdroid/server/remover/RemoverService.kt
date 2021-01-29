@@ -41,7 +41,7 @@ class RemoverService(private val dataService: TrashDataService) {
     }
 
     private fun pollList() {
-        internalFileWatcher = JVMWatcher(settings.root!!, trashList)
+        internalFileWatcher = JVMWatcher(settings.root, trashList)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
             internalFileWatcher?.watchFolder()
         }
@@ -49,17 +49,17 @@ class RemoverService(private val dataService: TrashDataService) {
 
     private fun initData() {
         // Make a vector array
-        File(settings.root!!).list()?.forEach {
+        File(settings.root).list()?.forEach {
             val fileObject: File = File(it)
 
             // When there is unknown files/folder --> Save it to DB[With EXTERNAL keyword]
-            if (!trashList.containsKey("${settings.root!!}/${fileObject.name}")) {
+            if (!trashList.containsKey("${settings.root}/${fileObject.name}")) {
                 val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
                     cwdLocation = "EXTERNAL",
                     originalFileDirectory = "EXTERNAL",
-                    trashFileDirectory = "${settings.root!!}/${fileObject.name}"
+                    trashFileDirectory = "${settings.root}/${fileObject.name}"
                 )
-                trashList["${settings.root!!}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
+                trashList["${settings.root}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
             }
         }
     }
@@ -96,12 +96,12 @@ class RemoverService(private val dataService: TrashDataService) {
         }
 
         val testFile: File = File(target)
-        val expectLocation: String = File(settings.root!!, testFile.name).absolutePath.toString()
+        val expectLocation: String = File(settings.root, testFile.name).absolutePath.toString()
 
         return if (trashList.containsKey(expectLocation)) {
             // Change Name
             val changedString: String = testFile.name + "_${LocalDateTime.now()}"
-            File(settings.root!!, changedString).absolutePath.toString()
+            File(settings.root, changedString).absolutePath.toString()
         } else {
             // Just use expect location
             expectLocation

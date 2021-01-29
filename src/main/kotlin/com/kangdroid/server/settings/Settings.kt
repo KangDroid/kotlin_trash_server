@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties("kdr")
 @Component
 class Settings {
-    var root: String? = null
+    lateinit var root: String
 }
