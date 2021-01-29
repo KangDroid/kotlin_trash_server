@@ -111,7 +111,7 @@ class RemoveAPIControllerTest {
     @Test
     fun isRestoreWorking() {
         // Let
-        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.trashPath, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }

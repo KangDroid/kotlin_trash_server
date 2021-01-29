@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties("kdr")
 @Component
 class Settings {
-    lateinit var root: String
+    lateinit var trashPath: String
 }

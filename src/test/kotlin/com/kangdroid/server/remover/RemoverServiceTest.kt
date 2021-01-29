@@ -43,7 +43,7 @@ class RemoverServiceTest {
         // Let
         val testCwdLocation: String = "/tmp"
         val testOriginalFileDirectory: String = "/tmp/test.txt"
-        val testTrashFileDirectory: String = "${settings.root}/test.txt"
+        val testTrashFileDirectory: String = "${settings.trashPath}/test.txt"
         val fileObject: File = File(testTrashFileDirectory)
         if (!fileObject.exists()) {
             fileObject.createNewFile()
@@ -82,7 +82,7 @@ class RemoverServiceTest {
     @Test
     fun initDataWorksWell() {
         // after init map, initdata looks for any externally-new added file.
-        val targetTestFile: String = "${settings.root}/KDRTestFileAfter.txt"
+        val targetTestFile: String = "${settings.trashPath}/KDRTestFileAfter.txt"
         val fileObject: File = File(targetTestFile)
 
         if (!fileObject.exists()) {
@@ -115,7 +115,7 @@ class RemoverServiceTest {
         // Let
         val testFileLocation: String = "/tmp/test.txt"
         // make sure there is no test.txt on target location.
-        val fileObject: File = File(settings.root, File(testFileLocation).name)
+        val fileObject: File = File(settings.trashPath, File(testFileLocation).name)
         if (fileObject.exists()) {
             fileObject.delete()
         }
@@ -129,7 +129,7 @@ class RemoverServiceTest {
         // Let
         val testFileLocation: String = "/tmp/test.txt"
         // Add testfileLocation to hashMap
-        val fileObject: File = File(settings.root, File(testFileLocation).name)
+        val fileObject: File = File(settings.trashPath, File(testFileLocation).name)
         removerService.trashList[fileObject.absolutePath.toString()] = TrashDataSaveRequestDto() // empty should work.
 
         // test it.
@@ -139,7 +139,7 @@ class RemoverServiceTest {
     @Test
     fun isRestoreWorkingWellTrue() {
         // Let
-        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.trashPath, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }
@@ -176,7 +176,7 @@ class RemoverServiceTest {
     @Test
     fun isRestoreWorkingWellFalse() {
         // Let
-        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.trashPath, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }
