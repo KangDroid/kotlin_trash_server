@@ -7,7 +7,6 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
 import com.kangdroid.server.settings.Settings
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,6 +36,9 @@ class RemoveAPIControllerTest {
 
     @Autowired
     private lateinit var removerService: RemoverService
+
+    @Autowired
+    private lateinit var settings: Settings
 
     @Before
     fun cleanDb() {
@@ -109,7 +111,7 @@ class RemoveAPIControllerTest {
     @Test
     fun isRestoreWorking() {
         // Let
-        val testFileObject: File = File(Settings.trashCanPath, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }

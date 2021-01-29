@@ -11,14 +11,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
+import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
 class RemoverService(private val dataService: TrashDataService) {
+    @Autowired
+    lateinit var settings: Settings
+
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private lateinit var syncJob: Job
     private var internalFileWatcher: InternalFileWatcher? = null
@@ -28,14 +33,15 @@ class RemoverService(private val dataService: TrashDataService) {
     val RESTORE_RENAME_FAIL: String = "Renaming file failed."
     val RESTORE_FULL_SUCCESS: String = "Restore Complete."
 
-    init {
+    @PostConstruct
+    fun testInit() {
         initMap()
         initData()
         pollList()
     }
 
     private fun pollList() {
-        internalFileWatcher = JVMWatcher(Settings.trashCanPath, trashList)
+        internalFileWatcher = JVMWatcher(settings.root!!, trashList)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
             internalFileWatcher?.watchFolder()
         }
@@ -43,17 +49,17 @@ class RemoverService(private val dataService: TrashDataService) {
 
     private fun initData() {
         // Make a vector array
-        File(Settings.trashCanPath).list()?.forEach {
+        File(settings.root!!).list()?.forEach {
             val fileObject: File = File(it)
 
             // When there is unknown files/folder --> Save it to DB[With EXTERNAL keyword]
-            if (!trashList.containsKey("${Settings.trashCanPath}/${fileObject.name}")) {
+            if (!trashList.containsKey("${settings.root!!}/${fileObject.name}")) {
                 val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
                     cwdLocation = "EXTERNAL",
                     originalFileDirectory = "EXTERNAL",
-                    trashFileDirectory = "${Settings.trashCanPath}/${fileObject.name}"
+                    trashFileDirectory = "${settings.root!!}/${fileObject.name}"
                 )
-                trashList["${Settings.trashCanPath}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
+                trashList["${settings.root!!}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
             }
         }
     }
@@ -90,12 +96,12 @@ class RemoverService(private val dataService: TrashDataService) {
         }
 
         val testFile: File = File(target)
-        val expectLocation: String = File(Settings.trashCanPath, testFile.name).absolutePath.toString()
+        val expectLocation: String = File(settings.root!!, testFile.name).absolutePath.toString()
 
         return if (trashList.containsKey(expectLocation)) {
             // Change Name
             val changedString: String = testFile.name + "_${LocalDateTime.now()}"
-            File(Settings.trashCanPath, changedString).absolutePath.toString()
+            File(settings.root!!, changedString).absolutePath.toString()
         } else {
             // Just use expect location
             expectLocation
@@ -128,7 +134,6 @@ class RemoverService(private val dataService: TrashDataService) {
 
         // Restore!
         val trashFileObject = File(trashDataSaveRequestDto.trashFileDirectory!!)
-
 
         return if (trashFileObject.renameTo(File(trashDataSaveRequestDto.originalFileDirectory))) {
             trashList.remove(trashDataSaveRequestDto.trashFileDirectory)

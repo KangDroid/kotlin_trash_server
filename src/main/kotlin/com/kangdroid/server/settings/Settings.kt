@@ -1,6 +1,10 @@
 package com.kangdroid.server.settings
 
-object Settings {
-    var trashCanPath: String = "/Users/kangdroid/Desktop/test_trashcan"
-    val serverVersion: String = "V1.0.0"
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@ConfigurationProperties("kdr")
+@Component
+class Settings {
+    var root: String? = null
 }

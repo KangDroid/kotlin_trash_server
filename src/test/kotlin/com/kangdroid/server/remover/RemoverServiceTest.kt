@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit4.SpringRunner
 import java.io.File
-import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
@@ -28,9 +27,15 @@ class RemoverServiceTest {
     @Autowired
     private lateinit var dataService: TrashDataService
 
+    @Autowired
+    private lateinit var settings: Settings
+
+    @Autowired
+    private lateinit var removerService: RemoverService
+
     @Before
     fun initTest() {
-        Settings.trashCanPath = "/tmp"
+        removerService.trashList.clear()
     }
 
     @Test
@@ -38,7 +43,7 @@ class RemoverServiceTest {
         // Let
         val testCwdLocation: String = "/tmp"
         val testOriginalFileDirectory: String = "/tmp/test.txt"
-        val testTrashFileDirectory: String = "${Settings.trashCanPath}/test.txt"
+        val testTrashFileDirectory: String = "${settings.root}/test.txt"
         val fileObject: File = File(testTrashFileDirectory)
         if (!fileObject.exists()) {
             fileObject.createNewFile()
@@ -52,7 +57,6 @@ class RemoverServiceTest {
             )
         )
 
-        val removerService: RemoverService = RemoverService(dataService)
         val methodToTest: Method = removerService.javaClass.getDeclaredMethod("initMap")
         methodToTest.isAccessible = true
 
@@ -78,14 +82,13 @@ class RemoverServiceTest {
     @Test
     fun initDataWorksWell() {
         // after init map, initdata looks for any externally-new added file.
-        val targetTestFile: String = "${Settings.trashCanPath}/KDRTestFileAfter.txt"
+        val targetTestFile: String = "${settings.root}/KDRTestFileAfter.txt"
         val fileObject: File = File(targetTestFile)
 
         if (!fileObject.exists()) {
             fileObject.createNewFile()
         }
 
-        val removerService: RemoverService = RemoverService(dataService)
         val methodToTest: Method = removerService.javaClass.getDeclaredMethod("initData")
         methodToTest.isAccessible = true
 
@@ -111,9 +114,8 @@ class RemoverServiceTest {
     fun checkTrashCanWorksWellNormal() {
         // Let
         val testFileLocation: String = "/tmp/test.txt"
-        val removerService: RemoverService = RemoverService(dataService)
         // make sure there is no test.txt on target location.
-        val fileObject: File = File(Settings.trashCanPath, File(testFileLocation).name)
+        val fileObject: File = File(settings.root, File(testFileLocation).name)
         if (fileObject.exists()) {
             fileObject.delete()
         }
@@ -126,9 +128,8 @@ class RemoverServiceTest {
     fun checkTrashCnWorksWellDuplicate() {
         // Let
         val testFileLocation: String = "/tmp/test.txt"
-        val removerService: RemoverService = RemoverService(dataService)
         // Add testfileLocation to hashMap
-        val fileObject: File = File(Settings.trashCanPath, File(testFileLocation).name)
+        val fileObject: File = File(settings.root, File(testFileLocation).name)
         removerService.trashList[fileObject.absolutePath.toString()] = TrashDataSaveRequestDto() // empty should work.
 
         // test it.
@@ -138,19 +139,19 @@ class RemoverServiceTest {
     @Test
     fun isRestoreWorkingWellTrue() {
         // Let
-        val testFileObject: File = File(Settings.trashCanPath, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }
         }
-        val removerService: RemoverService = RemoverService(dataService).also {
-            it.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
-                id = 0,
-                cwdLocation = "TEST",
-                originalFileDirectory = "/tmp/Test2.txt",
-                trashFileDirectory = testFileObject.absolutePath
-            )
-        }
+
+        removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
+            id = 0,
+            cwdLocation = "TEST",
+            originalFileDirectory = "/tmp/Test2.txt",
+            trashFileDirectory = testFileObject.absolutePath
+        )
+
         val innerCount: Int = removerService.trashList.size
 
         val returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
@@ -175,7 +176,7 @@ class RemoverServiceTest {
     @Test
     fun isRestoreWorkingWellFalse() {
         // Let
-        val testFileObject: File = File(Settings.trashCanPath, "KDRtest.txt").also {
+        val testFileObject: File = File(settings.root, "KDRtest.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }
@@ -187,14 +188,13 @@ class RemoverServiceTest {
             }
         }
 
-        val removerService: RemoverService = RemoverService(dataService).also {
-            it.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
-                id = 0,
-                cwdLocation = "TEST",
-                originalFileDirectory = "/tmp/Test2.txt",
-                trashFileDirectory = testFileObject.absolutePath
-            )
-        }
+        removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
+            id = 0,
+            cwdLocation = "TEST",
+            originalFileDirectory = "/tmp/Test2.txt",
+            trashFileDirectory = testFileObject.absolutePath
+        )
+
         val innerCount: Int = removerService.trashList.size
 
         var returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
