@@ -25,7 +25,7 @@ class RemoverService(private val dataService: TrashDataService) {
     lateinit var settings: Settings
 
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
-    private lateinit var syncJob: Job
+    private var syncJob: Job? = null
     private var internalFileWatcher: InternalFileWatcher? = null
     val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
     val RESTORE_TARGET_EXISTS: String = "Restore Target already exists!"
@@ -35,9 +35,11 @@ class RemoverService(private val dataService: TrashDataService) {
 
     @PostConstruct
     fun testInit() {
-        initMap()
-        initData()
-        pollList()
+        if (System.getProperty("kdr.isTesting") != "test") {
+            initMap()
+            initData()
+            pollList()
+        }
     }
 
     private fun pollList() {
@@ -90,9 +92,9 @@ class RemoverService(private val dataService: TrashDataService) {
     // Target: to delete, return final name
     fun checkTrashCan(target: String): String {
         // Close before work.
-        if (syncJob.isActive) {
+        if (syncJob?.isActive == true) {
             internalFileWatcher?.closeWatcher()
-            syncJob.cancel()
+            syncJob?.cancel()
         }
 
         val testFile: File = File(target)
@@ -145,7 +147,7 @@ class RemoverService(private val dataService: TrashDataService) {
 
     fun emptyTrashCan(): Boolean {
         var returnValue: Boolean = true
-        for ((k, v) in trashList) {
+        for ((k, _) in trashList) {
             returnValue = File(k).deleteRecursively()
         }
 

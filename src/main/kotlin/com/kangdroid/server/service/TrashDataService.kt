@@ -26,7 +26,6 @@ class TrashDataService(val trashDataRepository: TrashDataRepository) {
     }
 
     fun findAllDesc(removerService: RemoverService): List<TrashDataResponseDto> {
-        val returnList: List<TrashDataResponseDto>
         return removerService.trashList.toList().map {
             TrashDataResponseDto(
                 id = it.second.id,

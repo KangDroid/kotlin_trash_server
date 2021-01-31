@@ -57,6 +57,7 @@ dependencies {
 }
 
 tasks.test {
+    systemProperty("kdr.isTesting", "test")
     useJUnit()
 }
 

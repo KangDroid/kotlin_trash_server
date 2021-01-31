@@ -23,8 +23,6 @@ class SettingsAPIControllerTest {
 
     @Test
     fun isSettingsGetWorkWell() {
-        // let
-        settings.trashPath = "/tmp/kdrTesting"
         val errorValue: String = "ERROR"
 
         // URL/Port

@@ -7,6 +7,7 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
 import com.kangdroid.server.settings.Settings
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,6 +43,12 @@ class RemoveAPIControllerTest {
 
     @Before
     fun cleanDb() {
+        File(settings.trashPath).mkdir()
+    }
+
+    @After
+    fun cleanDirectory() {
+        File(settings.trashPath).deleteRecursively()
         removerService.trashList.clear()
     }
 
@@ -120,7 +127,7 @@ class RemoveAPIControllerTest {
         removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
             id = 0,
             cwdLocation = "TEST",
-            originalFileDirectory = "/tmp/Test2.txt",
+            originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
             trashFileDirectory = testFileObject.absolutePath
         )
 
@@ -136,7 +143,7 @@ class RemoveAPIControllerTest {
 //        val returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
 
         // Assert
-        val targetFileObject: File = File("/tmp/Test2.txt")
+        val targetFileObject: File = File(System.getProperty("java.io.tmpdir"), "Test2.txt")
         assertThat(responseMessage).isEqualTo(removerService.RESTORE_FULL_SUCCESS)
         assertThat(removerService.trashList.size).isEqualTo(innerCount-1)
         assertThat(targetFileObject.exists()).isEqualTo(true)

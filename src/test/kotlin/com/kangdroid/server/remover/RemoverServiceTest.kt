@@ -7,6 +7,7 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,14 +36,20 @@ class RemoverServiceTest {
 
     @Before
     fun initTest() {
+        File(settings.trashPath).mkdir()
+    }
+
+    @After
+    fun destroyRoot() {
         removerService.trashList.clear()
+        File(settings.trashPath).deleteRecursively()
     }
 
     @Test
     fun initMapWorksWell() {
         // Let
-        val testCwdLocation: String = "/tmp"
-        val testOriginalFileDirectory: String = "/tmp/test.txt"
+        val testCwdLocation: String = System.getProperty("java.io.tmpdir")
+        val testOriginalFileDirectory: String = File(testCwdLocation, "test.txt").absolutePath
         val testTrashFileDirectory: String = "${settings.trashPath}/test.txt"
         val fileObject: File = File(testTrashFileDirectory)
         if (!fileObject.exists()) {
@@ -113,7 +120,7 @@ class RemoverServiceTest {
     @Test
     fun checkTrashCanWorksWellNormal() {
         // Let
-        val testFileLocation: String = "/tmp/test.txt"
+        val testFileLocation: String = File(System.getProperty("java.io.tmpdir"), "test.txt").absolutePath
         // make sure there is no test.txt on target location.
         val fileObject: File = File(settings.trashPath, File(testFileLocation).name)
         if (fileObject.exists()) {
@@ -127,7 +134,7 @@ class RemoverServiceTest {
     @Test
     fun checkTrashCnWorksWellDuplicate() {
         // Let
-        val testFileLocation: String = "/tmp/test.txt"
+        val testFileLocation: String = File(System.getProperty("java.io.tmpdir"), "test.txt").absolutePath
         // Add testfileLocation to hashMap
         val fileObject: File = File(settings.trashPath, File(testFileLocation).name)
         removerService.trashList[fileObject.absolutePath.toString()] = TrashDataSaveRequestDto() // empty should work.
@@ -148,7 +155,7 @@ class RemoverServiceTest {
         removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
             id = 0,
             cwdLocation = "TEST",
-            originalFileDirectory = "/tmp/Test2.txt",
+            originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
             trashFileDirectory = testFileObject.absolutePath
         )
 
@@ -157,7 +164,7 @@ class RemoverServiceTest {
         val returnMessage: String = removerService.restore(TrashDataRestoreRequestDto(testFileObject.absolutePath))
 
         // Assert
-        val targetFileObject: File = File("/tmp/Test2.txt")
+        val targetFileObject: File = File(System.getProperty("java.io.tmpdir"), "Test2.txt")
         assertThat(returnMessage).isEqualTo(removerService.RESTORE_FULL_SUCCESS)
         assertThat(removerService.trashList.size).isEqualTo(innerCount-1)
         assertThat(targetFileObject.exists()).isEqualTo(true)
@@ -182,7 +189,7 @@ class RemoverServiceTest {
             }
         }
 
-        val targetFileAddition: File = File("/tmp/Test2.txt").also {
+        val targetFileAddition: File = File(System.getProperty("java.io.tmpdir"), "Test2.txt").also {
             if (!it.exists()) {
                 it.createNewFile()
             }
@@ -191,7 +198,7 @@ class RemoverServiceTest {
         removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
             id = 0,
             cwdLocation = "TEST",
-            originalFileDirectory = "/tmp/Test2.txt",
+            originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
             trashFileDirectory = testFileObject.absolutePath
         )
 
