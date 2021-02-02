@@ -12,7 +12,9 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
-class TrashDataService(val trashDataRepository: TrashDataRepository) {
+class TrashDataService {
+    @Autowired
+    lateinit var trashDataRepository: TrashDataRepository
 
     fun findById(id: Long): TrashDataResponseDto {
         val entityOptional: Optional<TrashData> =
