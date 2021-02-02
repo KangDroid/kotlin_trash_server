@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.stream.Collectors
 
 @Service
@@ -22,7 +23,7 @@ class TrashDataService {
     lateinit var settings: Settings
 
     // The hashmap[if setting is enabled]
-    val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
+    val trashList: ConcurrentMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
 
     fun findById(id: Long): TrashDataResponseDto {
         val entityOptional: Optional<TrashData> =
@@ -87,8 +88,14 @@ class TrashDataService {
 
     @Transactional(readOnly = true)
     fun findAllDescDb(): List<TrashDataResponseDto> {
-        return trashDataRepository.findAllDesc().stream()
-            .map { TrashDataResponseDto(it) }
-            .collect(Collectors.toList())
+        return if (settings.lowMemoryOption == true) {
+            trashDataRepository.findAllDesc().stream()
+                .map { TrashDataResponseDto(it) }
+                .collect(Collectors.toList())
+        } else {
+            trashList.map {
+                TrashDataResponseDto(it.value.toEntity())
+            }.stream().collect(Collectors.toList())
+        }
     }
 }

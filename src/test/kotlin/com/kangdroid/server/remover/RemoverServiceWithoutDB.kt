@@ -35,7 +35,7 @@ class RemoverServiceWithoutDB {
 
     @Before
     fun initTest() {
-        settings.lowMemoryOption = true
+        settings.lowMemoryOption = false
         File(settings.trashPath).mkdir()
     }
 
