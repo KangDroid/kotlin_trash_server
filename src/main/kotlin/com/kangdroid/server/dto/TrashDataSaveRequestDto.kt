@@ -9,6 +9,13 @@ class TrashDataSaveRequestDto(
     var trashFileDirectory: String? = null
 ) {
 
+    constructor(responseDto: TrashDataResponseDto): this(
+        id = responseDto.id,
+        cwdLocation = responseDto.cwdLocation,
+        originalFileDirectory = responseDto.originalFileDirectory,
+        trashFileDirectory = responseDto.trashFileDirectory
+    )
+
     fun toEntity(): TrashData {
         return TrashData(
             id = this.id,

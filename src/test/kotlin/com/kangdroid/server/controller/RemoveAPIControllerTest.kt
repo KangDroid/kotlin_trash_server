@@ -5,6 +5,7 @@ import com.kangdroid.server.domain.TrashDataRepository
 import com.kangdroid.server.dto.TrashDataRestoreRequestDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
+import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -41,6 +42,9 @@ class RemoveAPIControllerTest {
     @Autowired
     private lateinit var settings: Settings
 
+    @Autowired
+    private lateinit var dataService: TrashDataService
+
     @Before
     fun cleanDb() {
         File(settings.trashPath).mkdir()
@@ -49,7 +53,7 @@ class RemoveAPIControllerTest {
     @After
     fun cleanDirectory() {
         File(settings.trashPath).deleteRecursively()
-        removerService.trashList.clear()
+        dataService.deleteAll()
     }
 
     @Test
@@ -98,11 +102,13 @@ class RemoveAPIControllerTest {
         val url: String = "http://localhost:" + this.port + "/api/trash/data/all"
 
         // Register
-        removerService.trashList[trashFileDirectory] = TrashDataSaveRequestDto(
-            id = 0,
-            cwdLocation = cwdLocation,
-            originalFileDirectory = originalDirectory,
-            trashFileDirectory = trashFileDirectory
+        dataService.saveData(
+            TrashDataSaveRequestDto(
+                id = 0,
+                cwdLocation = cwdLocation,
+                originalFileDirectory = originalDirectory,
+                trashFileDirectory = trashFileDirectory
+            )
         )
 
         // Do work
@@ -124,14 +130,16 @@ class RemoveAPIControllerTest {
             }
         }
 
-        removerService.trashList[testFileObject.absolutePath] = TrashDataSaveRequestDto(
-            id = 0,
-            cwdLocation = "TEST",
-            originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
-            trashFileDirectory = testFileObject.absolutePath
+        dataService.saveData(
+            TrashDataSaveRequestDto(
+                id = 0,
+                cwdLocation = "TEST",
+                originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
+                trashFileDirectory = testFileObject.absolutePath
+            )
         )
 
-        val innerCount: Int = removerService.trashList.size
+        val innerCount: Int = dataService.size()
 
         // Do work
         val url: String = "http://localhost:" + this.port + "/api/trash/data/restore"
@@ -145,7 +153,7 @@ class RemoveAPIControllerTest {
         // Assert
         val targetFileObject: File = File(System.getProperty("java.io.tmpdir"), "Test2.txt")
         assertThat(responseMessage).isEqualTo(removerService.RESTORE_FULL_SUCCESS)
-        assertThat(removerService.trashList.size).isEqualTo(innerCount-1)
+        assertThat(dataService.size()).isEqualTo(innerCount-1)
         assertThat(targetFileObject.exists()).isEqualTo(true)
         assertThat(testFileObject.exists()).isEqualTo(false)
 

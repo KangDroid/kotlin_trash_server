@@ -5,16 +5,24 @@ import com.kangdroid.server.domain.TrashDataRepository
 import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.remover.RemoverService
+import com.kangdroid.server.settings.Settings
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
 
 @Service
 class TrashDataService {
     @Autowired
     lateinit var trashDataRepository: TrashDataRepository
+
+    @Autowired
+    lateinit var settings: Settings
+
+    // The hashmap[if setting is enabled]
+    val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
 
     fun findById(id: Long): TrashDataResponseDto {
         val entityOptional: Optional<TrashData> =
@@ -27,27 +35,9 @@ class TrashDataService {
         return trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
     }
 
-    fun findAllDesc(removerService: RemoverService): List<TrashDataResponseDto> {
-        return removerService.trashList.toList().map {
-            TrashDataResponseDto(
-                id = it.second.id,
-                cwdLocation = it.second.cwdLocation,
-                originalFileDirectory = it.second.originalFileDirectory,
-                trashFileDirectory = it.second.trashFileDirectory ?: "Unknown"
-            )
-        }
-    }
-
     @Transactional(readOnly = true)
     fun findAllDescDb(): List<TrashDataResponseDto> {
         return trashDataRepository.findAllDesc().stream()
-            .map { TrashDataResponseDto(it) }
-            .collect(Collectors.toList())
-    }
-
-    @Transactional(readOnly = true)
-    fun findByTrashFileDirectory(input: String): List<TrashDataResponseDto> {
-        return trashDataRepository.findByTrashFileDirectoryEquals(input).stream()
             .map { TrashDataResponseDto(it) }
             .collect(Collectors.toList())
     }
@@ -56,7 +46,27 @@ class TrashDataService {
         trashDataRepository.delete(entity)
     }
 
+    /**
+     * Global Abstract one from here
+     */
+    fun findTargetByTrashFile(input: String): TrashDataResponseDto? {
+        val returnTrashDataResponseDto = trashDataRepository.findByTrashFileDirectoryEquals(input)
+        return returnTrashDataResponseDto?.let { TrashDataResponseDto(it) }
+    }
+
+    fun saveData(trashDataSaveRequestDto: TrashDataSaveRequestDto) {
+        trashDataRepository.save(trashDataSaveRequestDto.toEntity())
+    }
+
+    fun removeData(input: String) {
+        trashDataRepository.deleteByTrashFileDirectory(input)
+    }
+
     fun deleteAll() {
         trashDataRepository.deleteAll()
+    }
+
+    fun size(): Int {
+        return trashDataRepository.count().toInt()
     }
 }
