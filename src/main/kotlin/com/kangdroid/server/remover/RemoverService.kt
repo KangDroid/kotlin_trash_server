@@ -49,6 +49,9 @@ class RemoverService {
     }
 
     private fun initData() {
+        // Delete All data for now
+        dataService.deleteAll()
+
         // Make a vector array
         File(settings.trashPath).list()?.forEach {
             val fileObject: File = File(it)
@@ -141,7 +144,6 @@ class RemoverService {
 
         return returnValue
     }
-
 
     fun restartService() {
         pollList()
