@@ -20,9 +20,12 @@ import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 
 @Component
-class RemoverService(private val dataService: TrashDataService) {
+class RemoverService {
     @Autowired
     lateinit var settings: Settings
+
+    @Autowired
+    private lateinit var dataService: TrashDataService
 
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private var syncJob: Job? = null
