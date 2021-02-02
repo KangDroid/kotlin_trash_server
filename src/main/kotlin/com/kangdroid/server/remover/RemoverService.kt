@@ -7,10 +7,7 @@ import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
 import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
@@ -34,11 +31,15 @@ class RemoverService {
     val RESTORE_FULL_SUCCESS: String = "Restore Complete."
 
     @PostConstruct
-    fun testInit() {
+    fun testInit() = runBlocking {
         if (System.getProperty("kdr.isTesting") != "test") {
-            initDB()
+            val dbList: List<TrashDataResponseDto> = dataService.findAllDescDb()
+            val tmpJob = coroutineScope.launch(Dispatchers.IO) {
+                initDB(dbList)
+            }
             initData()
             pollList()
+            tmpJob.join()
         }
     }
 
@@ -68,9 +69,7 @@ class RemoverService {
     }
 
     // DB --> Local[check invalid entry]
-    fun initDB() {
-        val dbList: List<TrashDataResponseDto> = dataService.findAllDescDb()
-
+    fun initDB(dbList: List<TrashDataResponseDto>) {
         for (target in dbList) {
             if (!File(target.trashFileDirectory).exists()) {
                 dataService.deleteById(target.id)

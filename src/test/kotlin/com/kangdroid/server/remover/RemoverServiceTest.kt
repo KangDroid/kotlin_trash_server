@@ -207,7 +207,7 @@ class RemoverServiceTest {
         )
 
         // Do work
-        removerService.initDB()
+        removerService.initDB(dataService.findAllDescDb())
 
         // Assert!
         assertThat(dataService.size()).isEqualTo(0)
