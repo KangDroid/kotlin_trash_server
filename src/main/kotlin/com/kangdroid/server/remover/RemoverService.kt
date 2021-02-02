@@ -36,6 +36,7 @@ class RemoverService {
     @PostConstruct
     fun testInit() {
         if (System.getProperty("kdr.isTesting") != "test") {
+            initDB()
             initData()
             pollList()
         }
@@ -48,10 +49,8 @@ class RemoverService {
         }
     }
 
+    // Local --> DB Setup
     private fun initData() {
-        // Delete All data for now
-        dataService.deleteAll()
-
         // Make a vector array
         File(settings.trashPath).list()?.forEach {
             val fileObject: File = File(it)
@@ -64,6 +63,17 @@ class RemoverService {
                     trashFileDirectory = "${settings.trashPath}/${fileObject.name}"
                 )
                 dataService.save(tmpTrashDataSaveRequestDto)
+            }
+        }
+    }
+
+    // DB --> Local[check invalid entry]
+    fun initDB() {
+        val dbList: List<TrashDataResponseDto> = dataService.findAllDescDb()
+
+        for (target in dbList) {
+            if (!File(target.trashFileDirectory).exists()) {
+                dataService.deleteById(target.id)
             }
         }
     }

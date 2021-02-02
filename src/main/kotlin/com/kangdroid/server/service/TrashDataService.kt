@@ -56,6 +56,10 @@ class TrashDataService {
         return trashDataRepository.count().toInt()
     }
 
+    fun deleteById(id: Long) {
+        trashDataRepository.deleteById(id)
+    }
+
     @Transactional(readOnly = true)
     fun findAllDescDb(): List<TrashDataResponseDto> {
         return trashDataRepository.findAllDesc().stream()

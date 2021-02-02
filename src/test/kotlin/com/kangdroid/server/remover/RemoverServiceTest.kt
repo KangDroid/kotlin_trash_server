@@ -193,4 +193,23 @@ class RemoverServiceTest {
             targetFileAddition.delete()
         }
     }
+
+    @Test
+    fun isInitDBWorkingWell() {
+        // Let
+        dataService.save(
+            TrashDataSaveRequestDto(
+                id = 0,
+                cwdLocation = "TEST",
+                originalFileDirectory = File(System.getProperty("java.io.tmpdir"), "Test2.txt").absolutePath,
+                trashFileDirectory = File(System.getProperty("java.io.tmpdir"), "somewhat_nonexistance.txt").absolutePath
+            )
+        )
+
+        // Do work
+        removerService.initDB()
+
+        // Assert!
+        assertThat(dataService.size()).isEqualTo(0)
+    }
 }
