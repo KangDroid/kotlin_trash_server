@@ -9,7 +9,7 @@ import javax.annotation.PostConstruct
 @Component
 class Settings {
     lateinit var trashPath: String
-    var lowMemoryOption: Boolean = false
+    var lowMemoryOption: Boolean? = null
     val serverVersion: String = "V1.0.0"
 
     @PostConstruct

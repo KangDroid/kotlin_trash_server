@@ -31,33 +31,58 @@ class TrashDataService {
         return TrashDataResponseDto(entityOptional.get())
     }
 
+    fun deleteById(id: Long) {
+        trashDataRepository.deleteById(id)
+    }
+
     /**
      * Global Abstract one from here
      * The functions below should implement trashList[concurrentHashMap] function as well.
      */
     fun findTargetByTrashFile(input: String): TrashDataResponseDto? {
-        val returnTrashDataResponseDto = trashDataRepository.findByTrashFileDirectoryEquals(input)
-        return returnTrashDataResponseDto?.let { TrashDataResponseDto(it) }
+        return if (settings.lowMemoryOption == true) {
+            val returnTrashDataResponseDto = trashDataRepository.findByTrashFileDirectoryEquals(input)
+            returnTrashDataResponseDto?.let { TrashDataResponseDto(it) }
+        } else {
+            if (trashList.contains(input)) {
+                TrashDataResponseDto(trashList[input]!!.toEntity())
+            } else {
+                null
+            }
+        }
     }
 
     fun save(trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
-        return trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
+        return if (settings.lowMemoryOption == true) {
+            trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
+        } else {
+            trashList[trashDataSaveRequestDto.trashFileDirectory!!] = trashDataSaveRequestDto
+            10
+        }
     }
 
     fun removeData(input: String) {
-        trashDataRepository.deleteByTrashFileDirectory(input)
+        if (settings.lowMemoryOption == true) {
+            trashDataRepository.deleteByTrashFileDirectory(input)
+        } else {
+            trashList.remove(input)
+        }
     }
 
     fun deleteAll() {
-        trashDataRepository.deleteAll()
+        if (settings.lowMemoryOption == true) {
+            trashDataRepository.deleteAll()
+        } else {
+            trashList.clear()
+        }
     }
 
     fun size(): Int {
-        return trashDataRepository.count().toInt()
-    }
-
-    fun deleteById(id: Long) {
-        trashDataRepository.deleteById(id)
+        return if (settings.lowMemoryOption == true) {
+            trashDataRepository.count().toInt()
+        } else {
+            trashList.size
+        }
     }
 
     @Transactional(readOnly = true)

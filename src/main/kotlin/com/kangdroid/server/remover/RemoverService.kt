@@ -70,6 +70,10 @@ class RemoverService {
 
     // DB --> Local[check invalid entry]
     fun initDB(dbList: List<TrashDataResponseDto>) {
+        if (settings.lowMemoryOption == false) {
+            return
+        }
+
         for (target in dbList) {
             if (!File(target.trashFileDirectory).exists()) {
                 dataService.deleteById(target.id)

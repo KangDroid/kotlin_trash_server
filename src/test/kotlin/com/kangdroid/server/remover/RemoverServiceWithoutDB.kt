@@ -19,7 +19,7 @@ import java.lang.reflect.Method
 
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RemoverServiceTest {
+class RemoverServiceWithoutDB {
 
     @Autowired
     private lateinit var trashDataRepository: TrashDataRepository
@@ -35,6 +35,7 @@ class RemoverServiceTest {
 
     @Before
     fun initTest() {
+        settings.lowMemoryOption = true
         File(settings.trashPath).mkdir()
     }
 
