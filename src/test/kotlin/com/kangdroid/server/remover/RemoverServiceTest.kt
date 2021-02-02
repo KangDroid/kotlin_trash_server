@@ -1,6 +1,5 @@
 package com.kangdroid.server.remover
 
-import com.kangdroid.server.domain.TrashData
 import com.kangdroid.server.domain.TrashDataRepository
 import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataRestoreRequestDto
@@ -95,7 +94,7 @@ class RemoverServiceTest {
         val testFileLocation: String = File(System.getProperty("java.io.tmpdir"), "test.txt").absolutePath
         // Add testfileLocation to hashMap
         val fileObject: File = File(settings.trashPath, File(testFileLocation).name)
-        dataService.saveData(
+        dataService.save(
             TrashDataSaveRequestDto(trashFileDirectory = fileObject.absolutePath)
         )
 
@@ -112,7 +111,7 @@ class RemoverServiceTest {
             }
         }
 
-        dataService.saveData(
+        dataService.save(
             TrashDataSaveRequestDto(
                 id = 0,
                 cwdLocation = "TEST",
@@ -157,7 +156,7 @@ class RemoverServiceTest {
             }
         }
 
-        dataService.saveData(
+        dataService.save(
             TrashDataSaveRequestDto(
                 id = 0,
                 cwdLocation = "TEST",

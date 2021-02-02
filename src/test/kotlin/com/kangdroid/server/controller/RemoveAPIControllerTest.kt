@@ -102,7 +102,7 @@ class RemoveAPIControllerTest {
         val url: String = "http://localhost:" + this.port + "/api/trash/data/all"
 
         // Register
-        dataService.saveData(
+        dataService.save(
             TrashDataSaveRequestDto(
                 id = 0,
                 cwdLocation = cwdLocation,
@@ -130,7 +130,7 @@ class RemoveAPIControllerTest {
             }
         }
 
-        dataService.saveData(
+        dataService.save(
             TrashDataSaveRequestDto(
                 id = 0,
                 cwdLocation = "TEST",

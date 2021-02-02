@@ -31,31 +31,17 @@ class TrashDataService {
         return TrashDataResponseDto(entityOptional.get())
     }
 
-    fun save(trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
-        return trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
-    }
-
-    @Transactional(readOnly = true)
-    fun findAllDescDb(): List<TrashDataResponseDto> {
-        return trashDataRepository.findAllDesc().stream()
-            .map { TrashDataResponseDto(it) }
-            .collect(Collectors.toList())
-    }
-
-    fun removeByEntity(entity: TrashData) {
-        trashDataRepository.delete(entity)
-    }
-
     /**
      * Global Abstract one from here
+     * The functions below should implement trashList[concurrentHashMap] function as well.
      */
     fun findTargetByTrashFile(input: String): TrashDataResponseDto? {
         val returnTrashDataResponseDto = trashDataRepository.findByTrashFileDirectoryEquals(input)
         return returnTrashDataResponseDto?.let { TrashDataResponseDto(it) }
     }
 
-    fun saveData(trashDataSaveRequestDto: TrashDataSaveRequestDto) {
-        trashDataRepository.save(trashDataSaveRequestDto.toEntity())
+    fun save(trashDataSaveRequestDto: TrashDataSaveRequestDto): Long {
+        return trashDataRepository.save(trashDataSaveRequestDto.toEntity()).id
     }
 
     fun removeData(input: String) {
@@ -68,5 +54,12 @@ class TrashDataService {
 
     fun size(): Int {
         return trashDataRepository.count().toInt()
+    }
+
+    @Transactional(readOnly = true)
+    fun findAllDescDb(): List<TrashDataResponseDto> {
+        return trashDataRepository.findAllDesc().stream()
+            .map { TrashDataResponseDto(it) }
+            .collect(Collectors.toList())
     }
 }

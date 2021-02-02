@@ -1,12 +1,10 @@
 package com.kangdroid.server.remover.watcher
 
-import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import com.sun.nio.file.SensitivityWatchEventModifier
 import java.io.File
 import java.nio.file.*
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is for OS does not support
@@ -60,7 +58,7 @@ class JVMWatcher(trashDirectory: String, dataService: TrashDataService) :
                         StandardWatchEventKinds.ENTRY_CREATE -> {
                             val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
                             if (dataService.findTargetByTrashFile(expectedLocation) == null) {
-                                dataService.saveData(TrashDataSaveRequestDto(
+                                dataService.save(TrashDataSaveRequestDto(
                                     cwdLocation = "EXTERNAL",
                                     originalFileDirectory = "EXTERNAL",
                                     trashFileDirectory = expectedLocation

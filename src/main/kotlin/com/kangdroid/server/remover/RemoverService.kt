@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
-import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @Component
 class RemoverService {
@@ -62,7 +60,7 @@ class RemoverService {
                     originalFileDirectory = "EXTERNAL",
                     trashFileDirectory = "${settings.trashPath}/${fileObject.name}"
                 )
-                dataService.saveData(tmpTrashDataSaveRequestDto)
+                dataService.save(tmpTrashDataSaveRequestDto)
             }
         }
     }
@@ -93,7 +91,7 @@ class RemoverService {
         val targetFile: File = File(trashDataSaveRequestDto.trashFileDirectory)
 
         with(trashDataSaveRequestDto) {
-            dataService.saveData(TrashDataSaveRequestDto(
+            dataService.save(TrashDataSaveRequestDto(
                 cwdLocation = cwdLocation,
                 originalFileDirectory = originalFileDirectory,
                 trashFileDirectory = trashFileDirectory
