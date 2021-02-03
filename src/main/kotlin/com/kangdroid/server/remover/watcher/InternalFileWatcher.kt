@@ -4,7 +4,7 @@ import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class InternalFileWatcher(val fileToWatch: String = "/tmp", val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto>) {
+abstract class InternalFileWatcher(val fileToWatch: String = "/tmp", val dataService: TrashDataService) {
     var isContinue: Boolean = true
 
     //    lateinit var regTrashList: HashMap<String, String>

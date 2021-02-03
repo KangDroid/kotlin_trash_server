@@ -1,19 +1,17 @@
 package com.kangdroid.server.remover.watcher
 
-import com.kangdroid.server.dto.TrashDataResponseDto
 import com.kangdroid.server.dto.TrashDataSaveRequestDto
 import com.kangdroid.server.service.TrashDataService
 import com.sun.nio.file.SensitivityWatchEventModifier
 import java.io.File
 import java.nio.file.*
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * This class is for OS does not support
  * LIVE File watching from me.
  */
-class JVMWatcher(trashDirectory: String, trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto>) :
-    InternalFileWatcher(trashDirectory, trashList) {
+class JVMWatcher(trashDirectory: String, dataService: TrashDataService) :
+    InternalFileWatcher(trashDirectory, dataService) {
     var watchKey: WatchKey? = null
 
     override fun watchFolder() {
@@ -59,20 +57,20 @@ class JVMWatcher(trashDirectory: String, trashList: ConcurrentHashMap<String, Tr
                     when (kind) {
                         StandardWatchEventKinds.ENTRY_CREATE -> {
                             val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
-                            if (!trashList.containsKey(expectedLocation)) {
-                                trashList[expectedLocation] = TrashDataSaveRequestDto(
+                            if (dataService.findTargetByTrashFile(expectedLocation) == null) {
+                                dataService.save(TrashDataSaveRequestDto(
                                     cwdLocation = "EXTERNAL",
                                     originalFileDirectory = "EXTERNAL",
                                     trashFileDirectory = expectedLocation
-                                )
+                                ))
                                 println("Created: ${fileObject.name}")
                             }
                         }
                         StandardWatchEventKinds.ENTRY_DELETE -> {
                             val expectedLocation: String = File(fileToWatch, fileObject.name).absolutePath.toString()
 
-                            if (trashList.containsKey(expectedLocation)) {
-                                trashList.remove(expectedLocation)
+                            if (dataService.findTargetByTrashFile(expectedLocation) != null) {
+                                dataService.removeData(expectedLocation)
                                 println("Removed: $directory")
                             }
                         }

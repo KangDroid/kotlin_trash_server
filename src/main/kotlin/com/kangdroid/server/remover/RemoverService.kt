@@ -7,84 +7,76 @@ import com.kangdroid.server.remover.watcher.InternalFileWatcher
 import com.kangdroid.server.remover.watcher.JVMWatcher
 import com.kangdroid.server.service.TrashDataService
 import com.kangdroid.server.settings.Settings
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.time.LocalDateTime
-import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
 
 @Component
-class RemoverService(private val dataService: TrashDataService) {
+class RemoverService {
     @Autowired
     lateinit var settings: Settings
+
+    @Autowired
+    private lateinit var dataService: TrashDataService
 
     private val coroutineScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private var syncJob: Job? = null
     private var internalFileWatcher: InternalFileWatcher? = null
-    val trashList: ConcurrentHashMap<String, TrashDataSaveRequestDto> = ConcurrentHashMap()
     val RESTORE_TARGET_EXISTS: String = "Restore Target already exists!"
     val RESTORE_TARGET_NOT_ON_MAP: String = "Restore Target is not on server!"
     val RESTORE_RENAME_FAIL: String = "Renaming file failed."
     val RESTORE_FULL_SUCCESS: String = "Restore Complete."
 
     @PostConstruct
-    fun testInit() {
+    fun testInit() = runBlocking {
         if (System.getProperty("kdr.isTesting") != "test") {
-            initMap()
+            val dbList: List<TrashDataResponseDto> = dataService.findAllDescDb()
+            val tmpJob = coroutineScope.launch(Dispatchers.IO) {
+                initDB(dbList)
+            }
             initData()
             pollList()
+            tmpJob.join()
         }
     }
 
     private fun pollList() {
-        internalFileWatcher = JVMWatcher(settings.trashPath, trashList)
+        internalFileWatcher = JVMWatcher(settings.trashPath, dataService)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
             internalFileWatcher?.watchFolder()
         }
     }
 
+    // Local --> DB Setup
     private fun initData() {
         // Make a vector array
         File(settings.trashPath).list()?.forEach {
             val fileObject: File = File(it)
 
             // When there is unknown files/folder --> Save it to DB[With EXTERNAL keyword]
-            if (!trashList.containsKey("${settings.trashPath}/${fileObject.name}")) {
+            if (dataService.findTargetByTrashFile("${settings.trashPath}/${fileObject.name}") == null) {
                 val tmpTrashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
                     cwdLocation = "EXTERNAL",
                     originalFileDirectory = "EXTERNAL",
                     trashFileDirectory = "${settings.trashPath}/${fileObject.name}"
                 )
-                trashList["${settings.trashPath}/${fileObject.name}"] = tmpTrashDataSaveRequestDto
+                dataService.save(tmpTrashDataSaveRequestDto)
             }
         }
     }
 
-    @PreDestroy
-    fun saveBackToDb() {
-        println("Saving back!")
-        dataService.deleteAll()
-        trashList.forEach { (_, v) ->
-            dataService.save(v)
+    // DB --> Local[check invalid entry]
+    fun initDB(dbList: List<TrashDataResponseDto>) {
+        if (settings.lowMemoryOption == false) {
+            return
         }
-    }
 
-    private fun initMap() {
-        val dbData: List<TrashDataResponseDto> = dataService.findAllDescDb()
-        for (response in dbData) {
-            if (File(response.trashFileDirectory).exists()) {
-                trashList[response.trashFileDirectory] = TrashDataSaveRequestDto(
-                    id = response.id,
-                    cwdLocation = response.cwdLocation,
-                    originalFileDirectory = response.originalFileDirectory,
-                    trashFileDirectory = response.trashFileDirectory
-                )
+        for (target in dbList) {
+            if (!File(target.trashFileDirectory).exists()) {
+                dataService.deleteById(target.id)
             }
         }
     }
@@ -100,7 +92,7 @@ class RemoverService(private val dataService: TrashDataService) {
         val testFile: File = File(target)
         val expectLocation: String = File(settings.trashPath, testFile.name).absolutePath.toString()
 
-        return if (trashList.containsKey(expectLocation)) {
+        return if (dataService.findTargetByTrashFile(expectLocation) != null) {
             // Change Name
             val changedString: String = testFile.name + "_${LocalDateTime.now()}"
             File(settings.trashPath, changedString).absolutePath.toString()
@@ -115,11 +107,11 @@ class RemoverService(private val dataService: TrashDataService) {
         val targetFile: File = File(trashDataSaveRequestDto.trashFileDirectory)
 
         with(trashDataSaveRequestDto) {
-            trashList[trashFileDirectory!!] = TrashDataSaveRequestDto(
+            dataService.save(TrashDataSaveRequestDto(
                 cwdLocation = cwdLocation,
                 originalFileDirectory = originalFileDirectory,
                 trashFileDirectory = trashFileDirectory
-            )
+            ))
         }
 
         if (!fileOriginal.renameTo(targetFile)) {
@@ -128,7 +120,14 @@ class RemoverService(private val dataService: TrashDataService) {
     }
 
     fun restore(trashDataRestoreRequestDto: TrashDataRestoreRequestDto): String {
-        val trashDataSaveRequestDto: TrashDataSaveRequestDto = trashList[trashDataRestoreRequestDto.trashFileDirectory] ?: return RESTORE_TARGET_NOT_ON_MAP
+        val tmpResponseDto = dataService.findTargetByTrashFile(trashDataRestoreRequestDto.trashFileDirectory)
+            ?: return RESTORE_TARGET_NOT_ON_MAP
+        val trashDataSaveRequestDto: TrashDataSaveRequestDto = TrashDataSaveRequestDto(
+            id = tmpResponseDto.id,
+            cwdLocation = tmpResponseDto.cwdLocation,
+            originalFileDirectory = tmpResponseDto.originalFileDirectory,
+            trashFileDirectory = tmpResponseDto.trashFileDirectory
+        )
         val originalFileObject: File = File(trashDataSaveRequestDto.originalFileDirectory)
         if (originalFileObject.exists()) {
             return RESTORE_TARGET_EXISTS
@@ -138,7 +137,7 @@ class RemoverService(private val dataService: TrashDataService) {
         val trashFileObject = File(trashDataSaveRequestDto.trashFileDirectory!!)
 
         return if (trashFileObject.renameTo(File(trashDataSaveRequestDto.originalFileDirectory))) {
-            trashList.remove(trashDataSaveRequestDto.trashFileDirectory)
+            dataService.removeData(trashDataSaveRequestDto.trashFileDirectory!!)
             RESTORE_FULL_SUCCESS
         } else {
             RESTORE_RENAME_FAIL
@@ -146,17 +145,18 @@ class RemoverService(private val dataService: TrashDataService) {
     }
 
     fun emptyTrashCan(): Boolean {
+        val listTrashResponse: List<TrashDataResponseDto> = dataService.findAllDescDb()
         var returnValue: Boolean = true
-        for ((k, _) in trashList) {
-            returnValue = File(k).deleteRecursively()
+
+        for (target in listTrashResponse) {
+            returnValue = File(target.trashFileDirectory).deleteRecursively()
         }
 
         // clear all data
-        trashList.clear()
+        dataService.deleteAll()
 
         return returnValue
     }
-
 
     fun restartService() {
         pollList()
