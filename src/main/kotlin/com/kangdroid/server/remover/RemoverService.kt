@@ -46,7 +46,9 @@ class RemoverService {
     private fun pollList() {
         internalFileWatcher = JVMWatcher(settings.trashPath, dataService)
         syncJob = coroutineScope.launch(Dispatchers.IO) {
-            internalFileWatcher?.watchFolder()
+            runInterruptible {
+                internalFileWatcher?.watchFolder()
+            }
         }
     }
 
@@ -84,10 +86,13 @@ class RemoverService {
 
     // Target: to delete, return final name
     fun checkTrashCan(target: String): String {
-        // Close before work.
-        if (syncJob?.isActive == true) {
-            internalFileWatcher?.closeWatcher()
-            syncJob?.cancel()
+        // Wait in Main thread!
+        runBlocking {
+            // Close before work.
+            if (syncJob?.isActive == true) {
+                internalFileWatcher?.closeWatcher()
+                syncJob?.cancelAndJoin()
+            }
         }
 
         val testFile: File = File(target)

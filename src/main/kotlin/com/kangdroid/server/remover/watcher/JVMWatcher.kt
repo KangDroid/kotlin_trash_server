@@ -42,7 +42,7 @@ class JVMWatcher(trashDirectory: String, dataService: TrashDataService) :
             try {
                 watchKey = watchService.take() // Start wait
             } catch (e: InterruptedException) {
-                e.printStackTrace()
+                println("Interrupted!")
             }
 
             val events = watchKey?.pollEvents() // Get Events
