@@ -75,7 +75,8 @@ class RemoverService {
         }
 
         for (target in dbList) {
-            if (!File(target.trashFileDirectory).exists()) {
+            val tmpFileObject: File = File(target.trashFileDirectory)
+            if (!tmpFileObject.exists() || tmpFileObject.parent != settings.trashPath) {
                 dataService.deleteById(target.id)
             }
         }
